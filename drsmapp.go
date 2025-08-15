@@ -50,7 +50,10 @@ func initDrsm(resName string) {
 		opt.IpPool["pool1"] = "192.168.1.0/24"
 		opt.IpPool["pool2"] = "192.168.2.0/24"
 	}
-	drsmInitialize, _ := drsm.InitDRSM(resName, podId, db, opt)
+	drsmInitialize, err := drsm.InitDRSM(resName, podId, db, opt)
+	if err != nil {
+		logger.AppLog.Fatalf("DRSM initialization failed: %+v", err)
+	}
 	drsmIntf.d = drsmInitialize.(*drsm.Drsm)
 }
 
@@ -65,19 +68,23 @@ func AllocateInt32One(resName string) int32 {
 }
 
 func AllocateInt32Many(resName string, number int32) []int32 {
-	// code to acquire more than 1000 Ids
 	var resIds []int32
 	var count int32 = 0
 
 	ticker := time.NewTicker(50 * time.Millisecond)
 	for range ticker.C {
-		id, _ := drsmIntf.d.AllocateInt32ID()
+		id, err := drsmIntf.d.AllocateInt32ID()
+		if err != nil {
+			logger.AppLog.Debugf("id allocation error %+v", err)
+			continue
+		}
 		if id != 0 {
 			resIds = append(resIds, id)
 		}
 		logger.AppLog.Infof("received id %d", id)
 		count++
 		if count >= number {
+			ticker.Stop()
 			return resIds
 		}
 	}
