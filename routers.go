@@ -143,7 +143,10 @@ func http_server() {
 	}))
 
 	httpAddr := ":" + strconv.Itoa(8000)
-	engine.Run(httpAddr)
+	err := engine.Run(httpAddr)
+	if err != nil {
+		logger.AppLog.Fatalf("webserver failed to start: %+v", err)
+	}
 	logger.AppLog.Infoln("webserver stopped/terminated/not-started")
 }
 
@@ -161,7 +164,12 @@ func IntegerResourceNamePost(c *gin.Context) {
 	}
 	number, ok := c.GetQuery("number")
 	if ok {
-		n1, _ := strconv.Atoi(number)
+		n1, err := strconv.Atoi(number)
+		if err != nil {
+			logger.AppLog.Errorf("invalid number parameter: %+v", err)
+			c.JSON(http.StatusBadRequest, gin.H{})
+			return
+		}
 		n := int32(n1)
 		resId := AllocateInt32Many(resName, n)
 		if len(resId) == 0 {
@@ -198,10 +206,15 @@ func IntegerResourceNameDelete(c *gin.Context) {
 		return
 	}
 	logger.AppLog.Infof("received resource delete. Res Id %v", resId)
-	r, _ := strconv.Atoi(resId)
+	r, err := strconv.Atoi(resId)
+	if err != nil {
+		logger.AppLog.Errorf("invalid resource-id parameter: %+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
 	rid := int32(r)
 
-	err := ReleaseInt32One(resName, rid)
+	err = ReleaseInt32One(resName, rid)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{})
 	} else {
@@ -219,7 +232,12 @@ func Ipv4ResourceNamePost(c *gin.Context) {
 	}
 	number, ok := c.GetQuery("number")
 	if ok {
-		n1, _ := strconv.Atoi(number)
+		n1, err := strconv.Atoi(number)
+		if err != nil {
+			logger.AppLog.Errorf("invalid number parameter: %+v", err)
+			c.JSON(http.StatusBadRequest, gin.H{})
+			return
+		}
 		n := int32(n1)
 		resId := IpAddressAllocMany(resName, n)
 		if len(resId) == 0 {
@@ -461,7 +479,10 @@ func GetQuery(param string, c *gin.Context) (int32, bool) {
 	if !ok {
 		return 0, false
 	}
-	p2, _ := strconv.Atoi(p1)
+	p2, err := strconv.Atoi(p1)
+	if err != nil {
+		return 0, false
+	}
 	p := int32(p2)
 	return p, true
 }

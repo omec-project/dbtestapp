@@ -80,8 +80,13 @@ func getStudentFromDB(collName string, name string) (Student, error) {
 	result, err := mongoHndl.GetOneCustomDataStructure(collName, filter)
 
 	if err == nil {
-		bsonBytes, _ := bson.Marshal(result)
-		bson.Unmarshal(bsonBytes, &student)
+		bsonBytes, errMarshal := bson.Marshal(result)
+		if errMarshal != nil {
+			return student, errMarshal
+		}
+		if errUnmarshal := bson.Unmarshal(bsonBytes, &student); errUnmarshal != nil {
+			return student, errUnmarshal
+		}
 
 		return student, nil
 	}
