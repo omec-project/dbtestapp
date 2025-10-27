@@ -23,7 +23,7 @@ type drsmInterface struct {
 var drsmIntf drsmInterface
 
 func scanChunk(i int32) bool {
-	logger.AppLog.Debugf("received callback from module to scan Chunk resource %+v", i)
+	logger.DrsmLog.Debugf("received callback from module to scan Chunk resource %+v", i)
 	return false
 }
 
@@ -42,7 +42,7 @@ func initDrsm(resName string) {
 	t := time.Now().UnixNano()
 	opt := &drsm.Options{}
 	if t%2 == 0 {
-		logger.AppLog.Debugln("running in Demux Mode")
+		logger.DrsmLog.Debugln("running in Demux Mode")
 		drsmIntf.Mode = drsm.ResourceDemux
 	} else {
 		opt.ResourceValidCb = scanChunk
@@ -52,7 +52,7 @@ func initDrsm(resName string) {
 	}
 	drsmInitialize, err := drsm.InitDRSM(resName, podId, db, opt)
 	if err != nil {
-		logger.AppLog.Fatalf("DRSM initialization failed: %+v", err)
+		logger.DrsmLog.Fatalf("DRSM initialization failed: %+v", err)
 	}
 	drsmIntf.d = drsmInitialize.(*drsm.Drsm)
 }
@@ -60,10 +60,10 @@ func initDrsm(resName string) {
 func AllocateInt32One(resName string) int32 {
 	id, err := drsmIntf.d.AllocateInt32ID()
 	if err != nil {
-		logger.AppLog.Debugf("id allocation error %+v", err)
+		logger.DrsmLog.Debugf("id allocation error %+v", err)
 		return 0
 	}
-	logger.AppLog.Infof("received id %d", id)
+	logger.DrsmLog.Infof("received id %d", id)
 	return id
 }
 
@@ -75,13 +75,13 @@ func AllocateInt32Many(resName string, number int32) []int32 {
 	for range ticker.C {
 		id, err := drsmIntf.d.AllocateInt32ID()
 		if err != nil {
-			logger.AppLog.Debugf("id allocation error %+v", err)
+			logger.DrsmLog.Debugf("id allocation error %+v", err)
 			continue
 		}
 		if id != 0 {
 			resIds = append(resIds, id)
 		}
-		logger.AppLog.Infof("received id %d", id)
+		logger.DrsmLog.Infof("received id %d", id)
 		count++
 		if count >= number {
 			ticker.Stop()
@@ -94,7 +94,7 @@ func AllocateInt32Many(resName string, number int32) []int32 {
 func ReleaseInt32One(resName string, resId int32) error {
 	err := drsmIntf.d.ReleaseInt32ID(resId)
 	if err != nil {
-		logger.AppLog.Debugf("id release error %+v", err)
+		logger.DrsmLog.Debugf("id release error %+v", err)
 		return err
 	}
 	return nil

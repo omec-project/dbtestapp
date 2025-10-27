@@ -16,20 +16,20 @@ import (
 )
 
 func iterateChangeStream(routineCtx context.Context, stream *mongo.ChangeStream) {
-	logger.AppLog.Infoln("iterate change stream for timeout")
+	logger.MongoapiLog.Infoln("iterate change stream for timeout")
 	defer stream.Close(routineCtx)
 	for stream.Next(routineCtx) {
 		var data bson.M
 		if err := stream.Decode(&data); err != nil {
 			panic(err)
 		}
-		logger.AppLog.Infoln("iterate stream:", data)
+		logger.MongoapiLog.Infoln("iterate stream:", data)
 	}
 }
 
 func TimeoutTest(c *gin.Context) {
 	c.String(http.StatusOK, "timeoutTest!")
-	logger.AppLog.Infoln("starting timeout document")
+	logger.MongoapiLog.Infoln("starting timeout document")
 
 	database := mongoHndl.Client.Database("sdcore")
 	timeoutColl := database.Collection("timeout")
@@ -48,9 +48,9 @@ func TimeoutTest(c *gin.Context) {
 	// createDocumentWithTimeout("timeout", "yak2", 60, "createdAt")
 	ret := mongoHndl.RestfulAPICreateTTLIndex("timeout", 20, "updatedAt")
 	if ret {
-		logger.AppLog.Infoln("ttl index create successful")
+		logger.MongoapiLog.Infoln("ttl index create successful")
 	} else {
-		logger.AppLog.Infoln("ttl index exists already")
+		logger.MongoapiLog.Infoln("ttl index exists already")
 	}
 
 	createDocumentWithCommonTimeout("timeout", "yak1")
@@ -64,20 +64,20 @@ func TimeoutTest(c *gin.Context) {
 
 	ret = mongoHndl.RestfulAPIDropTTLIndex("timeout", "updatedAt")
 	if !ret {
-		logger.AppLog.Warnln("ttl index drop failed")
+		logger.MongoapiLog.Warnln("ttl index drop failed")
 	}
 	ret = mongoHndl.RestfulAPIPatchTTLIndex("timeout", 0, "expireAt")
 	if ret {
-		logger.AppLog.Infoln("ttl index patch successful")
+		logger.MongoapiLog.Infoln("ttl index patch successful")
 	} else {
-		logger.AppLog.Warnln("ttl index patch failed")
+		logger.MongoapiLog.Warnln("ttl index patch failed")
 	}
 
 	createDocumentWithExpiryTime("timeout", "yak1", 30)
 	createDocumentWithExpiryTime("timeout", "yak3", 30)
 	updateDocumentWithExpiryTime("timeout", "yak3", 40)
 	updateDocumentWithExpiryTime("timeout", "yak1", 50)
-	// logger.AppLog.Infoln("sleeping for 120 seconds")
+	// logger.MongoapiLog.Infoln("sleeping for 120 seconds")
 	// time.Sleep(120 * time.Second)
 	// updateDocumentWithTimeout("timeout", "yak1", 200, "createdAt")
 	c.JSON(http.StatusOK, gin.H{})
@@ -88,13 +88,13 @@ func createDocumentWithCommonTimeout(collName string, name string) {
 	putData["name"] = name
 	putData["createdAt"] = time.Now()
 	// timein := time.Now().Local().Add(time.Second * time.Duration(20))
-	// logger.AppLog.Infoln("updated timeout:", timein)
+	// logger.MongoapiLog.Infoln("updated timeout:", timein)
 	// putData["updatedAt"] = timein
 	putData["updatedAt"] = time.Now()
 	filter := bson.M{"name": name}
 	_, err := mongoHndl.RestfulAPIPutOne(collName, filter, putData)
 	if err != nil {
-		logger.AppLog.Warnf("failed to put document in %s: %+v", collName, err)
+		logger.MongoapiLog.Warnf("failed to put document in %s: %+v", collName, err)
 	}
 }
 
@@ -106,7 +106,7 @@ func updateDocumentWithCommonTimeout(collName string, name string) {
 	filter := bson.M{"name": name}
 	_, err := mongoHndl.RestfulAPIPutOne("timeout", filter, putData)
 	if err != nil {
-		logger.AppLog.Warnf("failed to update document in timeout: %+v", err)
+		logger.MongoapiLog.Warnf("failed to update document in timeout: %+v", err)
 	}
 }
 
@@ -119,7 +119,7 @@ func updateDocumentWithExpiryTime(collName string, name string, timeVal int) {
 	filter := bson.M{"name": name}
 	_, err := mongoHndl.RestfulAPIPutOne(collName, filter, putData)
 	if err != nil {
-		logger.AppLog.Warnf("failed to update document with expiry time in %s: %+v", collName, err)
+		logger.MongoapiLog.Warnf("failed to update document with expiry time in %s: %+v", collName, err)
 	}
 }
 
@@ -128,12 +128,12 @@ func createDocumentWithExpiryTime(collName string, name string, timeVal int) {
 	putData["name"] = name
 	putData["createdAt"] = time.Now()
 	timein := time.Now().Local().Add(time.Second * time.Duration(timeVal))
-	// logger.AppLog.Infoln("updated timeout:", timein)
+	// logger.MongoapiLog.Infoln("updated timeout:", timein)
 	putData["expireAt"] = timein
 	// putData["updatedAt"] = time.Now()
 	filter := bson.M{"name": name}
 	_, err := mongoHndl.RestfulAPIPutOne(collName, filter, putData)
 	if err != nil {
-		logger.AppLog.Warnf("failed to create document with expiry time in %s: %+v", collName, err)
+		logger.MongoapiLog.Warnf("failed to create document with expiry time in %s: %+v", collName, err)
 	}
 }

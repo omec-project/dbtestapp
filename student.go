@@ -29,7 +29,7 @@ func StudentRecordTest(c *gin.Context) {
 	collName := "student"
 	_, errVal := mongoHndl.CreateIndex(collName, "Name")
 	if errVal != nil {
-		logger.AppLog.Errorln("create index failed on Name field:", errVal)
+		logger.MongoapiLog.Errorln("create index failed on Name field:", errVal)
 	}
 
 	// add document to student collection.
@@ -39,9 +39,9 @@ func StudentRecordTest(c *gin.Context) {
 	// fetch document from student db based on index
 	student, err := getStudentFromDB(collName, "Osman Amjad")
 	if err == nil {
-		logger.AppLog.Infof("retrieved student %v", student)
+		logger.MongoapiLog.Infof("retrieved student %v", student)
 	} else {
-		logger.AppLog.Errorf("failed to retrieve student %v. Error - %+v", student, err)
+		logger.MongoapiLog.Errorf("failed to retrieve student %v. Error - %+v", student, err)
 	}
 
 	insertStudentInDB(collName, "John Smith", 25)
@@ -50,9 +50,9 @@ func StudentRecordTest(c *gin.Context) {
 	qName := "Nerf Doodle"
 	_, err = getStudentFromDB(collName, qName)
 	if err == nil {
-		logger.AppLog.Infof("retrieved student %v", qName)
+		logger.MongoapiLog.Infof("retrieved student %v", qName)
 	} else {
-		logger.AppLog.Errorf("failed to retrieve student %v. Error - %+v", qName, err)
+		logger.MongoapiLog.Errorf("failed to retrieve student %v. Error - %+v", qName, err)
 	}
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -66,10 +66,10 @@ func insertStudentInDB(collName string, name string, age int) {
 	filter := bson.M{}
 	_, err := mongoHndl.PutOneCustomDataStructure(collName, filter, student)
 	if err != nil {
-		logger.AppLog.Errorf("inserting student %v failed with error %+v", student, err)
+		logger.MongoapiLog.Errorf("inserting student %v failed with error %+v", student, err)
 		return
 	}
-	logger.AppLog.Infof("inserting student %v successful", student)
+	logger.MongoapiLog.Infof("inserting student %v successful", student)
 }
 
 func getStudentFromDB(collName string, name string) (Student, error) {
