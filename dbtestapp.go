@@ -17,13 +17,13 @@ var mongoHndl *mongoapi.MongoClient
 // TODO : inbuild shell commands to
 
 func main() {
-	logger.AppLog.Infoln("dbtestapp started")
+	logger.MongoapiLog.Infoln("dbtestapp started")
 
 	// connect to mongoDB
 	var err error
 	mongoHndl, err = mongoapi.NewMongoClient("mongodb://mongodb-arbiter-headless", "sdcore")
 	if err != nil {
-		logger.AppLog.Fatalf("failed to connect to MongoDB: %+v", err)
+		logger.MongoapiLog.Fatalf("failed to connect to MongoDB: %+v", err)
 	}
 
 	initDrsm("resourceids")
