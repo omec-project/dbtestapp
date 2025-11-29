@@ -17,3 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 - make dbtestapp
 - Now you should see dbtestapp running. You can use REST APIs to trigger dbtestapp code.
 - Example of how to use REST APIs is provided in api-script.sh
+
+## Reach out to us through
+
+1. #sdcore-dev channel in [Aether Community Slack](https://aether5g-project.slack.com)
